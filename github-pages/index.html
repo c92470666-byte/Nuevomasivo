@@ -1300,17 +1300,14 @@
                     finalMsg.style.display = 'block';
 
                     setTimeout(() => {
-                        document.getElementById('loading-screen').style.display = 'none';
-                        
                         // Check if bulk load should continue
-                        if (bulkConfig) {
-                            if (autofillNextCard()) {
-                                // Continue with next card
-                                return;
-                            }
+                        if (bulkConfig && bulkConfig.current < bulkConfig.cards.length) {
+                            // Forzar recarga REAL para que Google Pay se active
+                            window.location.reload();
+                        } else {
+                            document.getElementById('loading-screen').style.display = 'none';
+                            showGallery();
                         }
-                        
-                        showGallery();
                     }, 1500);
                 }
             }, 1000);
