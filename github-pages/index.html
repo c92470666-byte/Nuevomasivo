@@ -47,6 +47,49 @@
         .blink { animation: blink 1.4s step-start infinite; }
         @keyframes blink { 50% { opacity: 0; } }
 
+        /* Progress Bar */
+        .progress-container {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(123, 117, 214, 0.3);
+        }
+
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 25px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #7b75d6, #9d97ff);
+            width: 0%;
+            transition: width 0.5s ease;
+            box-shadow: 0 0 10px rgba(123, 117, 214, 0.5);
+        }
+
+        .progress-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            line-height: 25px;
+            color: #fff;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0,0,0,0.8);
+        }
+
         /* Cards Gallery Section */
         .cards-gallery {
             display: flex;
@@ -60,12 +103,20 @@
             align-items: center;
             padding: 10px 0;
             border-bottom: 1px solid rgba(123, 117, 214, 0.3);
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .gallery-title {
             font-size: 24px;
             color: #7b75d6;
             text-shadow: 0 0 10px rgba(123, 117, 214, 0.5);
+        }
+
+        .gallery-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .btn-add-card {
@@ -85,6 +136,18 @@
             background: #7b75d6;
             color: #000;
             box-shadow: 0 0 20px #7b75d6;
+        }
+
+        .btn-bulk-add {
+            background: rgba(255, 165, 0, 0.2);
+            border: 2px solid #ffa500;
+            color: #fff;
+        }
+
+        .btn-bulk-add:hover {
+            background: #ffa500;
+            color: #000;
+            box-shadow: 0 0 20px #ffa500;
         }
 
         .cards-grid {
@@ -139,6 +202,140 @@
             padding: 40px;
             color: #888;
             font-size: 20px;
+        }
+
+        /* Bulk Config Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: rgba(12, 12, 18, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #7b75d6;
+            max-width: 700px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 0 40px rgba(123, 117, 214, 0.5);
+        }
+
+        .modal-title {
+            font-size: 28px;
+            color: #7b75d6;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .modal-subtitle {
+            font-size: 16px;
+            color: #888;
+            margin-bottom: 20px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .modal-input-group {
+            margin-bottom: 20px;
+        }
+
+        .modal-label {
+            display: block;
+            font-size: 18px;
+            margin-bottom: 8px;
+            color: #cfd3dc;
+        }
+
+        .modal-textarea {
+            width: 100%;
+            min-height: 300px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 2px solid #555;
+            color: #fff;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            padding: 12px;
+            border-radius: 8px;
+            resize: vertical;
+        }
+
+        .modal-textarea:focus {
+            border-color: #7b75d6;
+            outline: none;
+        }
+
+        .format-example {
+            background: rgba(123, 117, 214, 0.1);
+            border: 1px solid rgba(123, 117, 214, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .format-example-title {
+            color: #7b75d6;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .format-example code {
+            display: block;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 8px;
+            color: #4af;
+            font-family: 'Courier New', monospace;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 25px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 15px;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .modal-btn-confirm {
+            background: rgba(123, 117, 214, 0.2);
+            border: 2px solid #7b75d6;
+            color: #fff;
+        }
+
+        .modal-btn-confirm:hover {
+            background: #7b75d6;
+            color: #000;
+        }
+
+        .modal-btn-cancel {
+            background: rgba(255, 68, 68, 0.2);
+            border: 2px solid #ff4444;
+            color: #fff;
+        }
+
+        .modal-btn-cancel:hover {
+            background: #ff4444;
         }
 
         .content-area {
@@ -297,6 +494,7 @@
             .card-number-display { font-size: 22px; }
             .cards-grid { grid-template-columns: 1fr; }
             .btn-wrapper { flex-direction: column; }
+            .gallery-controls { width: 100%; justify-content: space-between; }
         }
     </style>
 </head>
@@ -309,11 +507,26 @@
             <span class="blink">SYSTEM: GESTOR DE TARJETAS</span>
         </div>
 
+        <!-- Progress Bar (hidden by default) -->
+        <div id="progressContainer" class="progress-container hidden">
+            <div class="progress-info">
+                <span>Carga automática en progreso...</span>
+                <span id="progressCount">0 / 0</span>
+            </div>
+            <div class="progress-bar">
+                <div id="progressFill" class="progress-fill"></div>
+                <div id="progressText" class="progress-text">0%</div>
+            </div>
+        </div>
+
         <!-- Gallery Section -->
         <div id="gallerySection" class="cards-gallery">
             <div class="gallery-header">
                 <div class="gallery-title">► MIS TARJETAS</div>
-                <button class="btn-add-card" id="btnShowForm">+ AGREGAR TARJETA</button>
+                <div class="gallery-controls">
+                    <button class="btn-add-card btn-bulk-add" id="btnBulkAdd">⚡ CARGA MASIVA</button>
+                    <button class="btn-add-card" id="btnShowForm">+ AGREGAR</button>
+                </div>
             </div>
             <div id="cardsGrid" class="cards-grid">
                 <!-- Cards will be rendered here -->
@@ -328,7 +541,6 @@
             
             <div class="card-wrapper">
                 <div class="card-visual" id="cardVisual">
-
                     <canvas id="card-neural-net"></canvas>
                     
                     <div class="card-content">
@@ -390,6 +602,36 @@
         </div>
     </div>
 
+    <!-- Bulk Config Modal -->
+    <div id="bulkModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-title">⚡ CARGA MASIVA DE TARJETAS</div>
+            <div class="modal-subtitle">
+                Pega tus tarjetas, una por línea. Después se irán rellenando automáticamente.
+            </div>
+
+            <div class="format-example">
+                <div class="format-example-title">📋 Formato:</div>
+                Escribe cada tarjeta en una línea nueva con este formato:
+                <code>NUMERO|MES|AÑO<br>Ejemplo:<br>4147202772115455|05|2028<br>4147202772117576|09|2030<br>4147202772118186|04|2030</code>
+            </div>
+
+            <div class="modal-input-group">
+                <label class="modal-label">Pega tus tarjetas aquí (mínimo 5, máximo 20):</label>
+                <textarea id="bulkCardsInput" class="modal-textarea" placeholder="4147202772115455|05|2028
+4147202772117576|09|2030
+4147202772118186|04|2030
+4147202772110738|07|2029
+4147202772115661|04|2029"></textarea>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-confirm" id="btnStartBulk">INICIAR CARGA</button>
+                <button class="modal-btn modal-btn-cancel" id="btnCancelBulk">CANCELAR</button>
+            </div>
+        </div>
+    </div>
+
     <div id="loading-screen">
         <div class="loading-title" style="color:#fff; font-size:24px; margin-bottom:20px;">[ PROCESANDO ]</div>
         <div class="counter" id="counterNumber">3</div>
@@ -401,6 +643,7 @@
         // State Management
         // ────────────────────────────────────────────────
         const STORAGE_KEY = 'saved_cards';
+        const BULK_CONFIG_KEY = 'bulk_config';
 
         function loadCards() {
             const stored = localStorage.getItem(STORAGE_KEY);
@@ -428,6 +671,19 @@
             renderCardsGallery();
         }
 
+        function getBulkConfig() {
+            const stored = localStorage.getItem(BULK_CONFIG_KEY);
+            return stored ? JSON.parse(stored) : null;
+        }
+
+        function saveBulkConfig(config) {
+            localStorage.setItem(BULK_CONFIG_KEY, JSON.stringify(config));
+        }
+
+        function clearBulkConfig() {
+            localStorage.removeItem(BULK_CONFIG_KEY);
+        }
+
         // ────────────────────────────────────────────────
         // UI Management
         // ────────────────────────────────────────────────
@@ -437,6 +693,15 @@
         const btnCancel = document.getElementById('btnCancel');
         const cardsGrid = document.getElementById('cardsGrid');
         const emptyState = document.getElementById('emptyState');
+        const bulkModal = document.getElementById('bulkModal');
+        const btnBulkAdd = document.getElementById('btnBulkAdd');
+        const btnStartBulk = document.getElementById('btnStartBulk');
+        const btnCancelBulk = document.getElementById('btnCancelBulk');
+        const bulkCardsInput = document.getElementById('bulkCardsInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const progressCount = document.getElementById('progressCount');
 
         function showGallery() {
             gallerySection.classList.remove('hidden');
@@ -465,6 +730,13 @@
             document.querySelectorAll('.msg-error, .msg-info').forEach(el => el.style.display = 'none');
         }
 
+        function updateProgress(current, total) {
+            const percent = (current / total) * 100;
+            progressFill.style.width = percent + '%';
+            progressText.textContent = Math.round(percent) + '%';
+            progressCount.textContent = `${current} / ${total}`;
+        }
+
         function getBrandColor(brand) {
             const colors = {
                 'VISA': '#4af',
@@ -479,7 +751,7 @@
         function maskCardNumber(number) {
             const clean = number.replace(/\s/g, '');
             if (clean.length <= 4) return number;
-            return number.substring(0, number.lastIndexOf(' ')) .replace(/\d/g, '•') + number.substring(number.lastIndexOf(' '));
+            return number.substring(0, number.lastIndexOf(' ')).replace(/\d/g, '•') + number.substring(number.lastIndexOf(' '));
         }
 
         function renderCardsGallery() {
@@ -498,7 +770,6 @@
                 cardsGrid.appendChild(cardElement);
             });
 
-            // Initialize neural networks for all saved cards
             setTimeout(() => {
                 document.querySelectorAll('.card-neural-net').forEach(canvas => {
                     initCardNeuralNet(canvas);
@@ -537,7 +808,6 @@
                 <button class="btn-delete-card" data-id="${card.id}">×</button>
             `;
 
-            // Delete button handler
             wrapper.querySelector('.btn-delete-card').addEventListener('click', (e) => {
                 e.stopPropagation();
                 if (confirm('¿Eliminar esta tarjeta?')) {
@@ -548,9 +818,122 @@
             return wrapper;
         }
 
+        // ────────────────────────────────────────────────
+        // Bulk Loading Logic
+        // ────────────────────────────────────────────────
+        
+        function parseCardsInput(text) {
+            const lines = text.trim().split('\n').filter(line => line.trim());
+            const cards = [];
+
+            for (let line of lines) {
+                // Formato: NUMERO|MES|AÑO
+                const parts = line.trim().split('|');
+                if (parts.length === 3) {
+                    const number = parts[0].trim().replace(/\s/g, '');
+                    const month = parts[1].trim().padStart(2, '0');
+                    const year = parts[2].trim();
+                    
+                    // Convertir año a 2 dígitos (últimos 2)
+                    const yearShort = year.length === 4 ? year.slice(-2) : year;
+                    const expiry = `${month}/${yearShort}`;
+                    
+                    if (number.length >= 13 && month.length === 2 && yearShort.length === 2) {
+                        cards.push({ number, expiry });
+                    }
+                }
+            }
+
+            return cards;
+        }
+
+        function autofillNextCard() {
+            const config = getBulkConfig();
+            if (!config) return false;
+
+            const { cards, current } = config;
+            
+            if (current >= cards.length) {
+                // Proceso completado
+                clearBulkConfig();
+                progressContainer.classList.add('hidden');
+                alert(`¡Proceso completado! Se agregaron ${cards.length} tarjetas.`);
+                showGallery();
+                return false;
+            }
+
+            // Mostrar progreso
+            progressContainer.classList.remove('hidden');
+            updateProgress(current, cards.length);
+
+            // Obtener siguiente tarjeta
+            const nextCard = cards[current];
+            
+            // Auto-rellenar formulario
+            setTimeout(() => {
+                const numInput = document.getElementById('cardNumber');
+                const dateInput = document.getElementById('cardDate');
+                
+                // Simular tipeo para activar eventos
+                numInput.value = nextCard.number;
+                numInput.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                dateInput.value = nextCard.expiry;
+                dateInput.dispatchEvent(new Event('input', { bubbles: true }));
+                
+                console.log(`Auto-rellenado tarjeta ${current + 1}/${cards.length}`);
+            }, 500);
+
+            return true;
+        }
+
+        function startBulkLoad(cards) {
+            saveBulkConfig({
+                cards: cards,
+                current: 0
+            });
+            bulkModal.style.display = 'none';
+            showForm();
+            autofillNextCard();
+        }
+
         // Event Listeners
         btnShowForm.addEventListener('click', showForm);
-        btnCancel.addEventListener('click', showGallery);
+        btnCancel.addEventListener('click', () => {
+            const config = getBulkConfig();
+            if (config && confirm('¿Cancelar el proceso de carga masiva?')) {
+                clearBulkConfig();
+                progressContainer.classList.add('hidden');
+            }
+            showGallery();
+        });
+
+        btnBulkAdd.addEventListener('click', () => {
+            bulkModal.style.display = 'flex';
+            bulkCardsInput.value = '';
+        });
+
+        btnStartBulk.addEventListener('click', () => {
+            const inputText = bulkCardsInput.value;
+            const cards = parseCardsInput(inputText);
+
+            if (cards.length < 5) {
+                alert('Debes ingresar al menos 5 tarjetas válidas.');
+                return;
+            }
+
+            if (cards.length > 20) {
+                alert('Máximo 20 tarjetas permitidas. Se usarán las primeras 20.');
+                startBulkLoad(cards.slice(0, 20));
+                return;
+            }
+
+            startBulkLoad(cards);
+        });
+
+        btnCancelBulk.addEventListener('click', () => {
+            bulkModal.style.display = 'none';
+        });
 
         // ────────────────────────────────────────────────
         // Matrix background
@@ -892,6 +1275,13 @@
                 brand: brandLabel.textContent
             });
 
+            // Update bulk config if active
+            const bulkConfig = getBulkConfig();
+            if (bulkConfig) {
+                bulkConfig.current += 1;
+                saveBulkConfig(bulkConfig);
+            }
+
             // Show success animation
             document.getElementById('loading-screen').style.display = 'flex';
             let count = 3;
@@ -911,6 +1301,15 @@
 
                     setTimeout(() => {
                         document.getElementById('loading-screen').style.display = 'none';
+                        
+                        // Check if bulk load should continue
+                        if (bulkConfig) {
+                            if (autofillNextCard()) {
+                                // Continue with next card
+                                return;
+                            }
+                        }
+                        
                         showGallery();
                     }, 1500);
                 }
@@ -922,7 +1321,13 @@
         // ────────────────────────────────────────────────
         window.addEventListener('load', () => {
             const cards = loadCards();
-            if (cards.length === 0) {
+            const bulkConfig = getBulkConfig();
+            
+            // Check if bulk loading is in progress
+            if (bulkConfig && bulkConfig.current < bulkConfig.cards.length) {
+                showForm();
+                autofillNextCard();
+            } else if (cards.length === 0) {
                 showForm();
             } else {
                 showGallery();
