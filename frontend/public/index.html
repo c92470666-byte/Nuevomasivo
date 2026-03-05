@@ -1,0 +1,933 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Asociar Tarjeta - Demo</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: radial-gradient(circle at 20% 20%, #111019 0%, #06060a 45%, #030304 100%);
+            font-family: 'VT323', monospace;
+            color: #cfd3dc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        #matrix-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; 
+            opacity: 0.35;
+            pointer-events: none;
+        }
+
+        .page-container {
+            position: relative; z-index: 10; width: 100%; max-width: 1200px;
+            display: flex; flex-direction: column; gap: 20px;
+            background: rgba(12, 12, 18, 0.85);
+            padding: 25px; border-radius: 20px;
+            border: 1px solid rgba(123, 117, 214, 0.3);
+            box-shadow: 0 0 30px rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+            margin-bottom: 50px;
+        }
+
+        .top-bar {
+            text-align: center; border-bottom: 1.5px solid #7b75d6;
+            padding-bottom: 15px; margin-bottom: 10px;
+            font-size: 22px; color: #cfd3dc; text-shadow: 0 0 4px rgba(123, 117, 214, 0.4);
+        }
+        .blink { animation: blink 1.4s step-start infinite; }
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Cards Gallery Section */
+        .cards-gallery {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .gallery-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(123, 117, 214, 0.3);
+        }
+
+        .gallery-title {
+            font-size: 24px;
+            color: #7b75d6;
+            text-shadow: 0 0 10px rgba(123, 117, 214, 0.5);
+        }
+
+        .btn-add-card {
+            background: rgba(123, 117, 214, 0.2);
+            border: 2px solid #7b75d6;
+            color: #fff;
+            font-family: 'VT323', monospace;
+            font-size: 20px;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            text-transform: uppercase;
+        }
+
+        .btn-add-card:hover {
+            background: #7b75d6;
+            color: #000;
+            box-shadow: 0 0 20px #7b75d6;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .saved-card-item {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .saved-card-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(123, 117, 214, 0.4);
+        }
+
+        .btn-delete-card {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            z-index: 10;
+            background: rgba(255, 68, 68, 0.9);
+            border: 1px solid #ff4444;
+            color: #fff;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .saved-card-item:hover .btn-delete-card {
+            opacity: 1;
+        }
+
+        .btn-delete-card:hover {
+            background: #ff2222;
+            box-shadow: 0 0 15px #ff4444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            font-size: 20px;
+        }
+
+        .content-area {
+            display: flex; flex-direction: row; gap: 40px;
+            align-items: center; justify-content: center;
+        }
+
+        .card-wrapper { flex: 1; max-width: 420px; min-width: 300px; }
+
+        .card-visual {
+            aspect-ratio: 1.58/1; width: 100%;
+            border-radius: 18px; padding: 25px; position: relative;
+            display: flex; flex-direction: column; justify-content: space-between;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border: 1.5px solid rgba(123, 117, 214, 0.5);
+            box-shadow: 0 0 20px rgba(123, 117, 214, 0.2);
+            overflow: hidden; transition: transform 0.3s;
+        }
+
+        #card-neural-net, .card-neural-net { position: absolute; inset: 0; z-index: 1; opacity: 0.6; pointer-events: none; }
+        
+        .card-content { position: relative; z-index: 2; height: 100%; display: flex; flex-direction: column; justify-content: space-between;}
+        .card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+
+        .chip {
+            width: 50px; height: 36px;
+            background: linear-gradient(135deg, #e6c86e 0%, #bf9738 50%, #e6c86e 100%);
+            border-radius: 6px; position: relative;
+            border: 1px solid #8a6e18;
+            box-shadow: inset 0 1px 3px rgba(255,255,255,0.4), 0 2px 4px rgba(0,0,0,0.3);
+        }
+        .chip::before {
+            content: ""; position: absolute; top: 50%; left: 0; width: 100%; height: 1px;
+            background: rgba(0,0,0,0.3); transform: translateY(-50%);
+        }
+        .chip::after {
+            content: ""; position: absolute; left: 35%; top: 0; width: 30%; height: 100%;
+            border-left: 1px solid rgba(0,0,0,0.3); border-right: 1px solid rgba(0,0,0,0.3);
+        }
+
+        .card-logo-type {
+            font-size: 24px; font-weight: bold; font-style: italic;
+            text-transform: uppercase; text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            color: #fff;
+        }
+
+        .card-number-display {
+            font-size: 28px; letter-spacing: 3px; color: #fff;
+            text-shadow: 0 0 8px rgba(123,117,214,0.8);
+            margin-top: 10px; white-space: nowrap;
+        }
+
+        .card-bottom { display: flex; justify-content: space-between; align-items: flex-end; }
+        .card-label { font-size: 14px; color: #aaa; text-transform: uppercase; }
+        .card-value { font-size: 20px; color: #fff; }
+
+        .form-area { flex: 1; display: flex; flex-direction: column; gap: 20px; min-width: 300px; }
+        .input-group { position: relative; }
+        
+        .label { 
+            font-size: 20px; color: #cfd3dc; margin-bottom: 5px; display: flex; align-items: center; gap: 8px;
+        }
+
+        .emoji-jump {
+            display: inline-block;
+            animation: jump 1.5s infinite ease-in-out;
+        }
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        
+        input {
+            width: 100%; background: rgba(0, 0, 0, 0.4);
+            border: 2px solid #555; color: #fff;
+            font-family: 'VT323', monospace; font-size: 24px; padding: 12px;
+            border-radius: 8px; outline: none; transition: all 0.3s;
+        }
+        input:focus { border-color: #7b75d6; box-shadow: 0 0 15px rgba(123, 117, 214, 0.3); }
+
+        .msg-feedback { font-size: 16px; margin-top: 5px; min-height: 20px; transition: all 0.3s; }
+        .msg-error { color: #ff4444; text-shadow: 0 0 5px rgba(255, 0, 0, 0.4); display: none;}
+        .msg-info { 
+            color: #d042ff; 
+            text-shadow: 0 0 8px rgba(208, 66, 255, 0.6);
+            display: none; font-weight: bold; letter-spacing: 1px;
+        }
+        
+        .input-error { border-color: #ff4444 !important; box-shadow: 0 0 10px rgba(255,68,68,0.3) !important; }
+
+        .btn-wrapper {
+            perspective: 1000px;
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .btn-action {
+            flex: 1;
+            background: #2a2a40;
+            border: 2px solid #7b75d6; color: #fff;
+            font-family: 'VT323', monospace; font-size: 24px;
+            padding: 15px; cursor: pointer; border-radius: 10px;
+            text-transform: uppercase;
+            transform-style: preserve-3d;
+            animation: signSwing 4s ease-in-out infinite;
+            display: flex; justify-content: center; align-items: center; gap: 10px;
+        }
+        
+        .btn-cancel {
+            flex: 1;
+            background: rgba(255, 68, 68, 0.2);
+            border: 2px solid #ff4444;
+        }
+        
+        .btn-cancel:hover {
+            background: #ff4444;
+            box-shadow: 0 0 20px #ff4444;
+        }
+
+        @keyframes signSwing {
+            0% { transform: rotateX(0deg); }
+            50% { transform: rotateX(15deg); }
+            100% { transform: rotateX(0deg); }
+        }
+
+        .btn-action:hover { background: #7b75d6; color: #000; box-shadow: 0 0 20px #7b75d6; }
+
+        .emoji-spin {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .footer { 
+            text-align: center; 
+            font-size: 14px; 
+            opacity: 0.6; 
+            margin-top: 10px;
+        }
+
+        #loading-screen {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 5, 8, 0.95); z-index: 100;
+            flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .counter { font-size: 120px; color: #7b75d6; text-shadow: 0 0 20px #7b75d6; }
+        .success-text { font-size: 30px; color: #fff; margin-top: 20px; }
+
+        .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            body { align-items: flex-start; padding: 10px; padding-top: 80px; }
+            .page-container { width: 100%; padding: 15px; }
+            .content-area { flex-direction: column; gap: 25px; }
+            .card-visual { width: 100%; }
+            .card-number-display { font-size: 22px; }
+            .cards-grid { grid-template-columns: 1fr; }
+            .btn-wrapper { flex-direction: column; }
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="matrix-canvas"></canvas>
+
+    <div class="page-container">
+        <div class="top-bar">
+            <span class="blink">SYSTEM: GESTOR DE TARJETAS</span>
+        </div>
+
+        <!-- Gallery Section -->
+        <div id="gallerySection" class="cards-gallery">
+            <div class="gallery-header">
+                <div class="gallery-title">► MIS TARJETAS</div>
+                <button class="btn-add-card" id="btnShowForm">+ AGREGAR TARJETA</button>
+            </div>
+            <div id="cardsGrid" class="cards-grid">
+                <!-- Cards will be rendered here -->
+            </div>
+            <div id="emptyState" class="empty-state hidden">
+                No tienes tarjetas guardadas. ¡Agrega tu primera tarjeta!
+            </div>
+        </div>
+
+        <!-- Form Section -->
+        <div id="formSection" class="content-area hidden">
+            
+            <div class="card-wrapper">
+                <div class="card-visual" id="cardVisual">
+
+                    <canvas id="card-neural-net"></canvas>
+                    
+                    <div class="card-content">
+                        <div class="card-top">
+                            <div class="chip"></div>
+                            <div class="card-logo-type" id="cardBrandLabel" style="color: #4af;">VISA</div>
+                        </div>
+                        
+                        <div class="card-number-display" id="displayNumber">#### #### #### ####</div>
+                        
+                        <div class="card-bottom">
+                            <div>
+                                <div class="card-label">TITULAR</div>
+                                <div class="card-value">USUARIO</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="card-label">VENCE</div>
+                                <div class="card-value" id="displayDate">MM/AA</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-area">
+                <form id="payment-form">
+                    
+                    <div class="input-group">
+                        <label class="label">► NÚMERO DE TARJETA <span class="emoji-jump">💳</span></label>
+                        <input type="tel" id="cardNumber" name="cardnumber" autocomplete="off" placeholder="0000 0000 0000 0000" maxlength="23">
+                        <div id="msgNumber" class="msg-feedback">
+                            <span class="msg-error">ERROR: Tarjeta inválida o incompleta</span>
+                            <span class="msg-info">Faltan dígitos...</span>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="label">► FECHA DE VENCIMIENTO</label>
+                        <input type="tel" id="cardDate" name="cc-exp" autocomplete="off" placeholder="MM/AA" maxlength="5">
+                        <div id="msgDate" class="msg-feedback">
+                            <span class="msg-error">Fecha incompleta</span>
+                        </div>
+                    </div>
+
+                    <div class="btn-wrapper">
+                        <button type="submit" id="btnAsociar" class="btn-action">
+                            <span class="emoji-spin">⚡</span> GUARDAR
+                        </button>
+                        <button type="button" id="btnCancel" class="btn-action btn-cancel">
+                            CANCELAR
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="footer">
+            Uso libre – Plantilla de demostración – Sin restricciones de uso personal o educativo
+        </div>
+    </div>
+
+    <div id="loading-screen">
+        <div class="loading-title" style="color:#fff; font-size:24px; margin-bottom:20px;">[ PROCESANDO ]</div>
+        <div class="counter" id="counterNumber">3</div>
+        <div class="success-text" id="finalMessage">¡TARJETA GUARDADA CON ÉXITO!</div>
+    </div>
+
+    <script>
+        // ────────────────────────────────────────────────
+        // State Management
+        // ────────────────────────────────────────────────
+        const STORAGE_KEY = 'saved_cards';
+
+        function loadCards() {
+            const stored = localStorage.getItem(STORAGE_KEY);
+            return stored ? JSON.parse(stored) : [];
+        }
+
+        function saveCards(cards) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cards));
+        }
+
+        function addCard(cardData) {
+            const cards = loadCards();
+            cards.push({
+                id: Date.now(),
+                ...cardData,
+                createdAt: new Date().toISOString()
+            });
+            saveCards(cards);
+        }
+
+        function deleteCard(cardId) {
+            const cards = loadCards();
+            const filtered = cards.filter(c => c.id !== cardId);
+            saveCards(filtered);
+            renderCardsGallery();
+        }
+
+        // ────────────────────────────────────────────────
+        // UI Management
+        // ────────────────────────────────────────────────
+        const gallerySection = document.getElementById('gallerySection');
+        const formSection = document.getElementById('formSection');
+        const btnShowForm = document.getElementById('btnShowForm');
+        const btnCancel = document.getElementById('btnCancel');
+        const cardsGrid = document.getElementById('cardsGrid');
+        const emptyState = document.getElementById('emptyState');
+
+        function showGallery() {
+            gallerySection.classList.remove('hidden');
+            formSection.classList.add('hidden');
+            renderCardsGallery();
+        }
+
+        function showForm() {
+            gallerySection.classList.add('hidden');
+            formSection.classList.remove('hidden');
+            resetForm();
+            setTimeout(resizeNet, 100);
+        }
+
+        function resetForm() {
+            document.getElementById('cardNumber').value = '';
+            document.getElementById('cardDate').value = '';
+            document.getElementById('displayNumber').textContent = '#### #### #### ####';
+            document.getElementById('displayDate').textContent = 'MM/AA';
+            document.getElementById('cardBrandLabel').textContent = 'VISA';
+            document.getElementById('cardBrandLabel').style.color = '#4af';
+            
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => input.classList.remove('input-error'));
+            
+            document.querySelectorAll('.msg-error, .msg-info').forEach(el => el.style.display = 'none');
+        }
+
+        function getBrandColor(brand) {
+            const colors = {
+                'VISA': '#4af',
+                'MASTERCARD': '#f55',
+                'AMEX': '#0cf',
+                'DISCOVER': '#fa0',
+                'DINERS': '#aaa'
+            };
+            return colors[brand] || '#4af';
+        }
+
+        function maskCardNumber(number) {
+            const clean = number.replace(/\s/g, '');
+            if (clean.length <= 4) return number;
+            return number.substring(0, number.lastIndexOf(' ')) .replace(/\d/g, '•') + number.substring(number.lastIndexOf(' '));
+        }
+
+        function renderCardsGallery() {
+            const cards = loadCards();
+            cardsGrid.innerHTML = '';
+
+            if (cards.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+
+            cards.forEach(card => {
+                const cardElement = createCardElement(card);
+                cardsGrid.appendChild(cardElement);
+            });
+
+            // Initialize neural networks for all saved cards
+            setTimeout(() => {
+                document.querySelectorAll('.card-neural-net').forEach(canvas => {
+                    initCardNeuralNet(canvas);
+                });
+            }, 100);
+        }
+
+        function createCardElement(card) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'saved-card-item';
+
+            const brandColor = getBrandColor(card.brand);
+            const maskedNumber = maskCardNumber(card.number);
+
+            wrapper.innerHTML = `
+                <div class="card-visual">
+                    <canvas class="card-neural-net"></canvas>
+                    <div class="card-content">
+                        <div class="card-top">
+                            <div class="chip"></div>
+                            <div class="card-logo-type" style="color: ${brandColor};">${card.brand}</div>
+                        </div>
+                        <div class="card-number-display">${maskedNumber}</div>
+                        <div class="card-bottom">
+                            <div>
+                                <div class="card-label">TITULAR</div>
+                                <div class="card-value">USUARIO</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div class="card-label">VENCE</div>
+                                <div class="card-value">${card.expiry}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-delete-card" data-id="${card.id}">×</button>
+            `;
+
+            // Delete button handler
+            wrapper.querySelector('.btn-delete-card').addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (confirm('¿Eliminar esta tarjeta?')) {
+                    deleteCard(card.id);
+                }
+            });
+
+            return wrapper;
+        }
+
+        // Event Listeners
+        btnShowForm.addEventListener('click', showForm);
+        btnCancel.addEventListener('click', showGallery);
+
+        // ────────────────────────────────────────────────
+        // Matrix background
+        // ────────────────────────────────────────────────
+        const canvas = document.getElementById('matrix-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resizeMatrix() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeMatrix);
+        resizeMatrix();
+
+        const cols = Math.floor(width / 20) + 1;
+        const ypos = Array(cols).fill(0);
+
+        function drawMatrix() {
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.fillRect(0, 0, width, height);
+            ctx.fillStyle = '#8a7dff';
+            ctx.font = '15pt monospace';
+            
+            ypos.forEach((y, ind) => {
+                const text = String.fromCharCode(Math.random() * 128);
+                const x = ind * 20;
+                ctx.fillText(text, x, y);
+                if (y > 100 + Math.random() * 10000) ypos[ind] = 0;
+                else ypos[ind] = y + 20;
+            });
+        }
+        setInterval(drawMatrix, 50);
+
+        // ────────────────────────────────────────────────
+        // Neural network effect on card
+        // ────────────────────────────────────────────────
+        const netCanvas = document.getElementById('card-neural-net');
+        const netCtx = netCanvas.getContext('2d');
+        let netW, netH;
+        let nodes = [];
+        let animationId;
+
+        function resizeNet() {
+            const card = document.getElementById('cardVisual');
+            if (!card) return;
+            const rect = card.getBoundingClientRect();
+            netW = netCanvas.width = rect.width;
+            netH = netCanvas.height = rect.height;
+
+            if (nodes.length === 0) {
+                initNodes();
+            }
+        }
+        
+        function initNodes() {
+            nodes = [];
+            for(let i=0; i<30; i++) {
+                nodes.push({
+                    x: Math.random() * netW, y: Math.random() * netH,
+                    vx: (Math.random()-0.5)*0.5, vy: (Math.random()-0.5)*0.5
+                });
+            }
+        }
+
+        function drawNet() {
+            if (!netCtx || netW === 0) return;
+            
+            netCtx.clearRect(0,0,netW,netH);
+
+            for(let i=0; i<nodes.length; i++) {
+                let p1 = nodes[i];
+                p1.x += p1.vx; p1.y += p1.vy;
+
+                if(p1.x < 0) { p1.x = 0; p1.vx *= -1; }
+                if(p1.x > netW) { p1.x = netW; p1.vx *= -1; }
+                if(p1.y < 0) { p1.y = 0; p1.vy *= -1; }
+                if(p1.y > netH) { p1.y = netH; p1.vy *= -1; }
+
+                for(let j=i+1; j<nodes.length; j++) {
+                    let p2 = nodes[j];
+                    let d = Math.sqrt((p1.x-p2.x)**2 + (p1.y-p2.y)**2);
+                    if(d < 70) {
+                        netCtx.beginPath();
+                        netCtx.strokeStyle = `rgba(0, 242, 255, ${1 - d/70})`;
+                        netCtx.lineWidth = 0.8;
+                        netCtx.moveTo(p1.x, p1.y);
+                        netCtx.lineTo(p2.x, p2.y);
+                        netCtx.stroke();
+                    }
+                }
+
+                netCtx.beginPath();
+                netCtx.fillStyle = '#00f2ff';
+                netCtx.arc(p1.x, p1.y, 1.5, 0, Math.PI*2);
+                netCtx.fill();
+            }
+            animationId = requestAnimationFrame(drawNet);
+        }
+
+        function initCardNeuralNet(canvas) {
+            const ctx = canvas.getContext('2d');
+            const parent = canvas.parentElement;
+            const rect = parent.getBoundingClientRect();
+            const w = canvas.width = rect.width;
+            const h = canvas.height = rect.height;
+
+            const localNodes = [];
+            for(let i=0; i<30; i++) {
+                localNodes.push({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    vx: (Math.random()-0.5)*0.5,
+                    vy: (Math.random()-0.5)*0.5
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, w, h);
+
+                for(let i=0; i<localNodes.length; i++) {
+                    let p1 = localNodes[i];
+                    p1.x += p1.vx; p1.y += p1.vy;
+
+                    if(p1.x < 0) { p1.x = 0; p1.vx *= -1; }
+                    if(p1.x > w) { p1.x = w; p1.vx *= -1; }
+                    if(p1.y < 0) { p1.y = 0; p1.vy *= -1; }
+                    if(p1.y > h) { p1.y = h; p1.vy *= -1; }
+
+                    for(let j=i+1; j<localNodes.length; j++) {
+                        let p2 = localNodes[j];
+                        let d = Math.sqrt((p1.x-p2.x)**2 + (p1.y-p2.y)**2);
+                        if(d < 70) {
+                            ctx.beginPath();
+                            ctx.strokeStyle = `rgba(0, 242, 255, ${1 - d/70})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
+
+                    ctx.beginPath();
+                    ctx.fillStyle = '#00f2ff';
+                    ctx.arc(p1.x, p1.y, 1.5, 0, Math.PI*2);
+                    ctx.fill();
+                }
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        window.addEventListener('resize', resizeNet);
+
+        // ────────────────────────────────────────────────
+        // Card form logic
+        // ────────────────────────────────────────────────
+        const numInput = document.getElementById('cardNumber');
+        const dateInput = document.getElementById('cardDate');
+        const displayNum = document.getElementById('displayNumber');
+        const displayDate = document.getElementById('displayDate');
+        const brandLabel = document.getElementById('cardBrandLabel');
+        const msgNumber = document.getElementById('msgNumber');
+        const msgDate = document.getElementById('msgDate');
+        const form = document.getElementById('payment-form');
+
+        const cardPatterns = {
+            visa: /^4/,
+            mastercard: /^5[1-5]/,
+            amex: /^3[47]/,
+            discover: /^6(?:011|5)/,
+            diners: /^3(?:0[0-5]|[68])/
+        };
+
+        function checkLuhn(value) {
+            if (/[^0-9-\s]+/.test(value)) return false;
+            let nCheck = 0, nDigit = 0, bEven = false;
+            value = value.replace(/\D/g, "");
+            for (let n = value.length - 1; n >= 0; n--) {
+                let cDigit = value.charAt(n), nDigit = parseInt(cDigit, 10);
+                if (bEven) { if ((nDigit *= 2) > 9) nDigit -= 9; }
+                nCheck += nDigit; bEven = !bEven;
+            }
+            return (nCheck % 10) == 0;
+        }
+
+        function validateDate() {
+            const val = dateInput.value; 
+            const msgBox = msgDate;
+            const errSpan = msgBox.querySelector('.msg-error');
+
+            dateInput.classList.remove('input-error');
+            errSpan.style.display = 'none';
+
+            if (val.length < 5) {
+                if(val.length > 0) {
+                     errSpan.textContent = "Fecha incompleta";
+                     errSpan.style.display = 'block';
+                     dateInput.classList.add('input-error');
+                }
+                return false;
+            }
+
+            const parts = val.split('/');
+            const month = parseInt(parts[0], 10);
+            const year = parseInt(parts[1], 10);
+
+            if (!month || !year || month < 1 || month > 12) {
+                errSpan.textContent = "Mes inválido (01-12)";
+                errSpan.style.display = 'block';
+                dateInput.classList.add('input-error');
+                return false;
+            }
+
+            const now = new Date();
+            const currentYear = parseInt(now.getFullYear().toString().substr(-2));
+            const currentMonth = now.getMonth() + 1; 
+
+            let expired = false;
+            if (year < currentYear) {
+                expired = true; 
+            } else if (year === currentYear) {
+                if (month < currentMonth) {
+                    expired = true; 
+                }
+            }
+
+            if (expired) {
+                errSpan.textContent = "ERROR: Fecha expirada o inválida";
+                errSpan.style.display = 'block';
+                dateInput.classList.add('input-error');
+                return false;
+            }
+
+            return true;
+        }
+
+        numInput.addEventListener('input', (e) => {
+            let raw = e.target.value.replace(/\D/g, '');
+            let formatted = '';
+
+            let type = "VISA"; 
+            let color = "#4af";
+
+            if (cardPatterns.mastercard.test(raw)) { type = "MASTERCARD"; color = "#f55"; }
+            else if (cardPatterns.amex.test(raw)) { type = "AMEX"; color = "#0cf"; }
+            else if (cardPatterns.discover.test(raw)) { type = "DISCOVER"; color = "#fa0"; }
+            else if (cardPatterns.diners.test(raw)) { type = "DINERS"; color = "#aaa"; }
+            else if (cardPatterns.visa.test(raw)) { type = "VISA"; color = "#4af"; }
+            
+            brandLabel.textContent = type;
+            brandLabel.style.color = color;
+
+            if (type === "AMEX") {
+                for(let i=0; i<raw.length; i++) {
+                    if (i===4 || i===10) formatted += ' ';
+                    formatted += raw[i];
+                }
+            } else {
+                for(let i=0; i<raw.length; i++) {
+                    if (i>0 && i%4===0) formatted += ' ';
+                    formatted += raw[i];
+                }
+            }
+            
+            e.target.value = formatted;
+            displayNum.textContent = formatted || "#### #### #### ####";
+
+            validateNumber(false); 
+        });
+
+        numInput.addEventListener('blur', () => validateNumber(true));
+
+        function validateNumber(checkIncomplete) {
+            const raw = numInput.value.replace(/\D/g, '');
+            const msgBox = msgNumber;
+            const errSpan = msgBox.querySelector('.msg-error');
+            const infoSpan = msgBox.querySelector('.msg-info');
+            
+            numInput.classList.remove('input-error');
+            errSpan.style.display = 'none';
+            infoSpan.style.display = 'none';
+
+            if (raw.length === 0) return;
+
+            const isAmex = brandLabel.textContent === "AMEX";
+            const minLength = isAmex ? 15 : 16;
+
+            if (raw.length < minLength) {
+                infoSpan.textContent = `Faltan ${minLength - raw.length} dígitos...`;
+                infoSpan.style.display = 'block';
+                if(checkIncomplete) numInput.classList.add('input-error');
+            } else {
+                if (!checkLuhn(raw)) {
+                    errSpan.style.display = 'block';
+                    errSpan.textContent = "ERROR: Número inválido (Algoritmo)";
+                    numInput.classList.add('input-error');
+                }
+            }
+        }
+
+        dateInput.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/\D/g, '');
+            if (val.length >= 3) {
+                e.target.value = val.slice(0,2) + '/' + val.slice(2,4);
+            } else {
+                e.target.value = val;
+            }
+            displayDate.textContent = e.target.value || "MM/AA";
+
+            if(e.target.value.length === 5) {
+                validateDate();
+            } else {
+                dateInput.classList.remove('input-error');
+                msgDate.querySelector('.msg-error').style.display = 'none';
+            }
+        });
+
+        dateInput.addEventListener('blur', validateDate);
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const raw = numInput.value.replace(/\D/g, '');
+            const isCardValid = (raw.length >= 13 && checkLuhn(raw));
+            const isDateValid = validateDate(); 
+
+            if (!isCardValid || !isDateValid) {
+                form.style.transform = "translateX(5px)";
+                setTimeout(()=> form.style.transform = "translateX(-5px)", 50);
+                setTimeout(()=> form.style.transform = "translateX(0)", 100);
+                return;
+            }
+
+            // Save card
+            addCard({
+                number: numInput.value,
+                expiry: dateInput.value,
+                brand: brandLabel.textContent
+            });
+
+            // Show success animation
+            document.getElementById('loading-screen').style.display = 'flex';
+            let count = 3;
+            const counter = document.getElementById('counterNumber');
+            const finalMsg = document.getElementById('finalMessage');
+            
+            counter.style.display = 'block';
+            finalMsg.style.display = 'none';
+
+            const timer = setInterval(() => {
+                count--;
+                counter.textContent = count;
+                if(count <= 0) {
+                    clearInterval(timer);
+                    counter.style.display = 'none';
+                    finalMsg.style.display = 'block';
+
+                    setTimeout(() => {
+                        document.getElementById('loading-screen').style.display = 'none';
+                        showGallery();
+                    }, 1500);
+                }
+            }, 1000);
+        });
+
+        // ────────────────────────────────────────────────
+        // Initialize
+        // ────────────────────────────────────────────────
+        window.addEventListener('load', () => {
+            const cards = loadCards();
+            if (cards.length === 0) {
+                showForm();
+            } else {
+                showGallery();
+            }
+        });
+    </script>
+</body>
+</html>
