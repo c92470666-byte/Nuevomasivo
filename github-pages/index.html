@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Asociar Tarjeta - Demo</title>
+    <title>Gestor de Tarjetas + CC Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -46,6 +47,142 @@
         }
         .blink { animation: blink 1.4s step-start infinite; }
         @keyframes blink { 50% { opacity: 0; } }
+
+        /* CC Generator Section */
+        .generator-section {
+            background: rgba(30, 30, 30, 0.7);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        .generator-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(123, 117, 214, 0.3);
+        }
+
+        .generator-icon {
+            width: 30px;
+            height: 30px;
+            background: rgba(123, 117, 214, 0.2);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #7b75d6;
+        }
+
+        .generator-title {
+            font-size: 20px;
+            color: #7b75d6;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            flex: 1;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+            color: #a0a0a0;
+            letter-spacing: 0.5px;
+        }
+
+        .form-label i {
+            color: #7b75d6;
+            margin-right: 5px;
+        }
+
+        input.form-input, select.form-input, textarea.form-input {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'VT323', monospace;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        input.form-input:focus, select.form-input:focus, textarea.form-input:focus {
+            outline: none;
+            border-color: #7b75d6;
+            box-shadow: 0 0 8px rgba(123, 117, 214, 0.3);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: 2px solid #7b75d6;
+            background: rgba(123, 117, 214, 0.2);
+            color: #fff;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'VT323', monospace;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-transform: uppercase;
+        }
+
+        .btn:hover {
+            background: #7b75d6;
+            box-shadow: 0 0 15px #7b75d6;
+        }
+
+        .btn-secondary {
+            border-color: #666;
+            background: rgba(102, 102, 102, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: #666;
+            box-shadow: 0 0 15px #666;
+        }
+
+        .btn-danger {
+            border-color: #ff4444;
+            background: rgba(255, 68, 68, 0.2);
+        }
+
+        .btn-danger:hover {
+            background: #ff4444;
+            box-shadow: 0 0 15px #ff4444;
+        }
+
+        .result-badge {
+            background: rgba(123, 117, 214, 0.2);
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 14px;
+            border: 1px solid #7b75d6;
+        }
 
         /* Progress Bar */
         .progress-container {
@@ -495,6 +632,7 @@
             .cards-grid { grid-template-columns: 1fr; }
             .btn-wrapper { flex-direction: column; }
             .gallery-controls { width: 100%; justify-content: space-between; }
+            .form-row { flex-direction: column; }
         }
     </style>
 </head>
@@ -504,7 +642,72 @@
 
     <div class="page-container">
         <div class="top-bar">
-            <span class="blink">SYSTEM: GESTOR DE TARJETAS</span>
+            <span class="blink">SYSTEM: GESTOR DE TARJETAS + CC GENERATOR</span>
+        </div>
+
+        <!-- CC GENERATOR SECTION -->
+        <div class="generator-section">
+            <div class="generator-header">
+                <div class="generator-icon"><i class="fas fa-cogs"></i></div>
+                <h3 class="generator-title">CC GENERATOR</h3>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-id-card"></i> BIN PATTERN (USE ; FOR MULTIPLE)</label>
+                <textarea id="binInput" class="form-input" placeholder="414720xxxxxx ; 515462" rows="2"></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-key"></i> CVV (OPCIONAL)</label>
+                    <input type="text" id="cvvInput" class="form-input" placeholder="DEJAR VACÍO PARA ALEATORIO">
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-hashtag"></i> CANTIDAD</label>
+                    <input type="number" id="qtyInput" class="form-input" value="10" min="1" max="100">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-calendar-alt"></i> MES</label>
+                    <select id="monthSelect" class="form-input">
+                        <option value="Random">ALEATORIO</option>
+                        <option value="01">01</option><option value="02">02</option><option value="03">03</option>
+                        <option value="04">04</option><option value="05">05</option><option value="06">06</option>
+                        <option value="07">07</option><option value="08">08</option><option value="09">09</option>
+                        <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label"><i class="fas fa-calendar-day"></i> AÑO</label>
+                    <select id="yearSelect" class="form-input">
+                        <option value="Random">ALEATORIO</option>
+                        <option value="2026">2026</option><option value="2027">2027</option><option value="2028">2028</option>
+                        <option value="2029">2029</option><option value="2030">2030</option><option value="2031">2031</option>
+                        <option value="2032">2032</option><option value="2033">2033</option><option value="2034">2034</option>
+                        <option value="2035">2035</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label"><i class="fas fa-clipboard-list"></i> RESULTADOS (CC|MM|YYYY|CVV)</label>
+                <textarea id="resultOutput" class="form-input" readonly placeholder="LAS TARJETAS GENERADAS APARECERÁN AQUÍ"></textarea>
+            </div>
+
+            <div class="btn-group">
+                <button id="generateBtn" class="btn">
+                    <i class="fas fa-rocket"></i> GENERAR
+                </button>
+                <span class="result-badge" id="cardCount">0 TARJETAS</span>
+                <button id="copyGenBtn" class="btn btn-secondary">
+                    <i class="fas fa-copy"></i> COPIAR
+                </button>
+                <button id="clearGenBtn" class="btn btn-danger">
+                    <i class="fas fa-trash-alt"></i> LIMPIAR
+                </button>
+            </div>
         </div>
 
         <!-- Progress Bar (hidden by default) -->
@@ -597,38 +800,38 @@
             </div>
         </div>
 
-        <div class="footer">
-            Uso libre – Plantilla de demostración – Sin restricciones de uso personal o educativo
-        </div>
-    </div>
+        <!-- Bulk Config Modal -->
+        <div id="bulkModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-title">⚡ CARGA MASIVA DE TARJETAS</div>
+                <div class="modal-subtitle">
+                    Pega tus tarjetas, una por línea. Después se irán rellenando automáticamente.
+                </div>
 
-    <!-- Bulk Config Modal -->
-    <div id="bulkModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-title">⚡ CARGA MASIVA DE TARJETAS</div>
-            <div class="modal-subtitle">
-                Pega tus tarjetas, una por línea. Después se irán rellenando automáticamente.
-            </div>
+                <div class="format-example">
+                    <div class="format-example-title">📋 Formato:</div>
+                    Escribe cada tarjeta en una línea nueva con este formato:
+                    <code>NUMERO|MES|AÑO<br>Ejemplo:<br>4147202772115455|05|2028<br>4147202772117576|09|2030<br>4147202772118186|04|2030</code>
+                </div>
 
-            <div class="format-example">
-                <div class="format-example-title">📋 Formato:</div>
-                Escribe cada tarjeta en una línea nueva con este formato:
-                <code>NUMERO|MES|AÑO<br>Ejemplo:<br>4147202772115455|05|2028<br>4147202772117576|09|2030<br>4147202772118186|04|2030</code>
-            </div>
-
-            <div class="modal-input-group">
-                <label class="modal-label">Pega tus tarjetas aquí (mínimo 5, máximo 20):</label>
-                <textarea id="bulkCardsInput" class="modal-textarea" placeholder="4147202772115455|05|2028
+                <div class="modal-input-group">
+                    <label class="modal-label">Pega tus tarjetas aquí (mínimo 5, máximo 20):</label>
+                    <textarea id="bulkCardsInput" class="modal-textarea" placeholder="4147202772115455|05|2028
 4147202772117576|09|2030
 4147202772118186|04|2030
 4147202772110738|07|2029
 4147202772115661|04|2029"></textarea>
-            </div>
+                </div>
 
-            <div class="modal-buttons">
-                <button class="modal-btn modal-btn-confirm" id="btnStartBulk">INICIAR CARGA</button>
-                <button class="modal-btn modal-btn-cancel" id="btnCancelBulk">CANCELAR</button>
+                <div class="modal-buttons">
+                    <button class="modal-btn modal-btn-confirm" id="btnStartBulk">INICIAR CARGA</button>
+                    <button class="modal-btn modal-btn-cancel" id="btnCancelBulk">CANCELAR</button>
+                </div>
             </div>
+        </div>
+
+        <div class="footer">
+            Uso libre – Plantilla de demostración – Sin restricciones de uso personal o educativo
         </div>
     </div>
 
@@ -639,6 +842,181 @@
     </div>
 
     <script>
+        // ────────────────────────────────────────────────
+        // CC GENERATOR FUNCTIONS (LUHN + BIN DETECTION)
+        // ────────────────────────────────────────────────
+        
+        function isValidLuhn(cc) {
+            let sum = 0;
+            let shouldDouble = false;
+            for (let i = cc.length - 1; i >= 0; i--) {
+                let digit = parseInt(cc[i], 10);
+                if (shouldDouble) {
+                    digit *= 2;
+                    if (digit > 9) digit -= 9;
+                }
+                sum += digit;
+                shouldDouble = !shouldDouble;
+            }
+            return sum % 10 === 0;
+        }
+
+        const cardNetworks = [
+            { network: "American Express", prefixes: ["34", "37"], lengths: [15], cvcLength: 4 },
+            { network: "Visa", prefixes: ["40", "41", "42", "43", "44", "45", "46", "47", "48", "49"], lengths: [16], cvcLength: 3 },
+            { network: "Mastercard", prefixes: ["51", "52", "53", "54", "55", "22", "23", "24", "25", "26", "27"], lengths: [16], cvcLength: 3 },
+            { network: "Discover", prefixes: ["60", "64", "65", "62"], lengths: [16], cvcLength: 3 },
+            { network: "JCB", prefixes: ["35"], lengths: [16], cvcLength: 3 },
+            { network: "Diners Club", prefixes: ["30", "36", "38", "39"], lengths: [16], cvcLength: 3 }
+        ];
+
+        function getCardDetails(cc) {
+            if (!cc) return { type: "Unknown", cvcLength: 3, length: 16 };
+            let lookupCC = cc.toLowerCase().replace(/x/g, '0');
+            if (lookupCC.length === 1) {
+                lookupCC = lookupCC === '4' ? '40' : lookupCC + '0';
+            }
+            const prefix = lookupCC.substring(0, 2);
+            for (const net of cardNetworks) {
+                if (net.prefixes.includes(prefix)) {
+                    return { type: net.network, cvcLength: net.cvcLength, length: net.lengths[0] };
+                }
+            }
+            return { type: "Unknown", cvcLength: 3, length: 16 };
+        }
+
+        function genCardNum(pattern) {
+            let cleanP = pattern.toLowerCase().replace(/[^0-9x]/g, '');
+            if (cleanP.length < 1) return null;
+
+            let details = getCardDetails(cleanP);
+            let defaultLen = details.length || 16;
+
+            while (cleanP.length < defaultLen) {
+                cleanP += 'x';
+            }
+
+            let isLastCharX = cleanP[cleanP.length - 1] === 'x';
+            let maxAttempts = 2000;
+
+            for (let att = 0; att < maxAttempts; att++) {
+                let cardStr = '';
+                let limit = isLastCharX ? cleanP.length - 1 : cleanP.length;
+                
+                for (let i = 0; i < limit; i++) {
+                    cardStr += cleanP[i] === 'x' ? Math.floor(Math.random() * 10) : cleanP[i];
+                }
+
+                if (isLastCharX) {
+                    let s = 0, a = true;
+                    for (let i = cardStr.length - 1; i >= 0; i--) {
+                        let d = parseInt(cardStr[i], 10);
+                        if (a) {
+                            d *= 2;
+                            if (d > 9) d -= 9;
+                        }
+                        s += d;
+                        a = !a;
+                    }
+                    let c = (s * 9) % 10;
+                    let fullCard = cardStr + c;
+                    if (isValidLuhn(fullCard)) return fullCard;
+                } else {
+                    if (isValidLuhn(cardStr)) return cardStr;
+                }
+            }
+            return null;
+        }
+
+        function genRndCVV(len) {
+            let c = '';
+            for (let n = 0; n < len; n++) c += Math.floor(Math.random() * 10);
+            return c;
+        }
+
+        function genRndMonth() {
+            return String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+        }
+
+        function genRndYear() {
+            return String(new Date().getFullYear() + Math.floor(Math.random() * 10));
+        }
+
+        function ensureFutureDate(selectedMonth, selectedYear) {
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth() + 1;
+
+            let year = (selectedYear === 'Random') ? genRndYear() : selectedYear;
+            let month = (selectedMonth === 'Random') ? genRndMonth() : selectedMonth.padStart(2, '0');
+
+            if (parseInt(year) < currentYear) {
+                year = String(currentYear);
+            }
+
+            if (parseInt(year) === currentYear && parseInt(month) < currentMonth) {
+                month = String(Math.floor(Math.random() * (12 - currentMonth + 1)) + currentMonth).padStart(2, '0');
+            }
+            return { month, year };
+        }
+
+        // CC Generator Button Logic
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const binInput = document.getElementById('binInput').value.trim();
+            const cvvInput = document.getElementById('cvvInput').value.trim();
+            const qty = Math.min(Math.max(1, parseInt(document.getElementById('qtyInput').value) || 10), 100);
+            const selMonth = document.getElementById('monthSelect').value;
+            const selYear = document.getElementById('yearSelect').value;
+            const output = document.getElementById('resultOutput');
+
+            if (!binInput) {
+                alert('Por favor ingresa un BIN pattern');
+                return;
+            }
+
+            const bins = binInput.split(';').map(p => p.trim().replace(/[^0-9xX]/gi, '')).filter(p => p && p.length >= 4);
+            if (bins.length === 0) {
+                alert('No se encontraron BIN válidos (mínimo 4 dígitos)');
+                return;
+            }
+
+            let result = '';
+            let count = 0;
+            let attempts = 0;
+            const maxAttempts = qty * 30;
+
+            while (count < qty && attempts < maxAttempts) {
+                attempts++;
+                let currentBin = bins[count % bins.length];
+                let card = genCardNum(currentBin);
+                
+                if (card) {
+                    let cardInfo = getCardDetails(card);
+                    let cvvLen = cardInfo.cvcLength;
+                    let { month, year } = ensureFutureDate(selMonth, selYear);
+                    let cvv = cvvInput ? cvvInput.slice(0, cvvLen) : genRndCVV(cvvLen);
+                    result += `${card}|${month}|${year}|${cvv}\n`;
+                    count++;
+                }
+            }
+
+            output.value = result;
+            document.getElementById('cardCount').textContent = `${count} TARJETAS`;
+        });
+
+        document.getElementById('copyGenBtn').addEventListener('click', function() {
+            const output = document.getElementById('resultOutput');
+            if (output.value) {
+                navigator.clipboard.writeText(output.value);
+                alert('¡Copiado al portapapeles!');
+            }
+        });
+
+        document.getElementById('clearGenBtn').addEventListener('click', function() {
+            document.getElementById('resultOutput').value = '';
+            document.getElementById('cardCount').textContent = '0 TARJETAS';
+        });
+
         // ────────────────────────────────────────────────
         // State Management
         // ────────────────────────────────────────────────
@@ -827,14 +1205,11 @@
             const cards = [];
 
             for (let line of lines) {
-                // Formato: NUMERO|MES|AÑO
                 const parts = line.trim().split('|');
                 if (parts.length === 3) {
                     const number = parts[0].trim().replace(/\s/g, '');
                     const month = parts[1].trim().padStart(2, '0');
                     const year = parts[2].trim();
-                    
-                    // Convertir año a 2 dígitos (últimos 2)
                     const yearShort = year.length === 4 ? year.slice(-2) : year;
                     const expiry = `${month}/${yearShort}`;
                     
@@ -854,7 +1229,6 @@
             const { cards, current } = config;
             
             if (current >= cards.length) {
-                // Proceso completado
                 clearBulkConfig();
                 progressContainer.classList.add('hidden');
                 alert(`¡Proceso completado! Se agregaron ${cards.length} tarjetas.`);
@@ -862,19 +1236,15 @@
                 return false;
             }
 
-            // Mostrar progreso
             progressContainer.classList.remove('hidden');
             updateProgress(current, cards.length);
 
-            // Obtener siguiente tarjeta
             const nextCard = cards[current];
             
-            // Auto-rellenar formulario
             setTimeout(() => {
                 const numInput = document.getElementById('cardNumber');
                 const dateInput = document.getElementById('cardDate');
                 
-                // Simular tipeo para activar eventos
                 numInput.value = nextCard.number;
                 numInput.dispatchEvent(new Event('input', { bubbles: true }));
                 
@@ -972,14 +1342,13 @@
         // Neural network effect on card
         // ────────────────────────────────────────────────
         const netCanvas = document.getElementById('card-neural-net');
-        const netCtx = netCanvas.getContext('2d');
+        const netCtx = netCanvas ? netCanvas.getContext('2d') : null;
         let netW, netH;
         let nodes = [];
-        let animationId;
 
         function resizeNet() {
             const card = document.getElementById('cardVisual');
-            if (!card) return;
+            if (!card || !netCanvas) return;
             const rect = card.getBoundingClientRect();
             netW = netCanvas.width = rect.width;
             netH = netCanvas.height = rect.height;
@@ -1031,7 +1400,7 @@
                 netCtx.arc(p1.x, p1.y, 1.5, 0, Math.PI*2);
                 netCtx.fill();
             }
-            animationId = requestAnimationFrame(drawNet);
+            requestAnimationFrame(drawNet);
         }
 
         function initCardNeuralNet(canvas) {
@@ -1268,21 +1637,18 @@
                 return;
             }
 
-            // Save card
             addCard({
                 number: numInput.value,
                 expiry: dateInput.value,
                 brand: brandLabel.textContent
             });
 
-            // Update bulk config if active
             const bulkConfig = getBulkConfig();
             if (bulkConfig) {
                 bulkConfig.current += 1;
                 saveBulkConfig(bulkConfig);
             }
 
-            // Show success animation
             document.getElementById('loading-screen').style.display = 'flex';
             let count = 3;
             const counter = document.getElementById('counterNumber');
@@ -1300,9 +1666,7 @@
                     finalMsg.style.display = 'block';
 
                     setTimeout(() => {
-                        // Check if bulk load should continue
                         if (bulkConfig && bulkConfig.current < bulkConfig.cards.length) {
-                            // Forzar recarga REAL para que Google Pay se active
                             window.location.reload();
                         } else {
                             document.getElementById('loading-screen').style.display = 'none';
@@ -1320,7 +1684,6 @@
             const cards = loadCards();
             const bulkConfig = getBulkConfig();
             
-            // Check if bulk loading is in progress
             if (bulkConfig && bulkConfig.current < bulkConfig.cards.length) {
                 showForm();
                 autofillNextCard();
